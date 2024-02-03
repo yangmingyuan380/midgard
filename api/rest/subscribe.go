@@ -11,6 +11,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"sync"
 	"sync/atomic"
 
@@ -238,6 +239,14 @@ func (m *Midgard) handleActionClipboardPut(conn *websocket.Conn, u *user, data [
 
 func (m *Midgard) boardcastMessage(msg *types.WebsocketMessage) {
 	log.Println("broadcast message from:", msg.UserID)
+	if m.historyMsg.Len() >= 10 {
+		// 删除链表的第一个元素
+		e := m.historyMsg.Front() // 获取第一个元素
+		if e != nil {
+			m.historyMsg.Remove(e) // 如果存在，删除它
+		}
+	}
+	m.historyMsg.PushBack(string(msg.Encode())) // 添加新的元素到链表末尾
 	m.mu.Lock()
 	for e := m.users.Front(); e != nil; e = e.Next() {
 		d, ok := e.Value.(*user)
@@ -252,4 +261,41 @@ func (m *Midgard) boardcastMessage(msg *types.WebsocketMessage) {
 	}
 	m.mu.Unlock()
 	log.Println("broadcast message is finished.")
+}
+
+func (m *Midgard) getAllDaemonClient(c *gin.Context) {
+	type Client struct {
+		Index uint64
+		ID    string
+	}
+	length := m.users.Len()
+	clients := make([]Client, 0, length)
+	for e := m.users.Front(); e != nil; e = e.Next() {
+		d, ok := e.Value.(*user)
+		if !ok || d.id == "" {
+			continue
+		}
+		client := Client{
+			Index: d.index,
+			ID:    d.id,
+		}
+		clients = append(clients, client)
+	}
+	c.JSON(http.StatusOK, clients)
+}
+
+func (m *Midgard) getIndex(c *gin.Context) {
+	c.HTML(http.StatusOK, "index.html", gin.H{})
+}
+
+func (m *Midgard) getHistory(c *gin.Context) {
+	var history []string // 替换YourMessageType为您存储在List中的实际类型
+
+	// 遍历List并将值添加到切片中
+	for e := m.historyMsg.Front(); e != nil; e = e.Next() {
+		if msg, ok := e.Value.(string); ok { // 确保类型断言正确
+			history = append(history, msg)
+		}
+	}
+	c.JSON(http.StatusOK, history)
 }

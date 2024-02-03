@@ -13,6 +13,7 @@ import (
 	"runtime"
 	"strings"
 
+	"changkun.de/x/midgard/api/middleware"
 	"changkun.de/x/midgard/internal/config"
 	"github.com/gin-gonic/gin"
 )
@@ -21,17 +22,21 @@ func (m *Midgard) routers() (r *gin.Engine) {
 	gin.SetMode(config.S().Mode)
 
 	r = gin.Default()
+	r.LoadHTMLGlob("api/rest/view/*")
+	r.Use(middleware.CROSMiddleware())
 	r.NoRoute(staticHandler(config.S().Store.Prefix, config.RepoPath))
 
 	mg := r.Group("/midgard")
 	mg.GET("/ping", m.PingPong)
 	mg.GET("/code", m.Code)
-
+	mg.GET("/clients", m.getAllDaemonClient)
+	mg.GET("/history", m.getHistory)
 	v1auth := mg.Group("/api/v1", BasicAuthWithAttemptsControl(Credentials{
 		config.S().Auth.User: config.S().Auth.Pass,
 	}))
 	{
 		v1auth.GET("/clipboard", m.GetFromUniversalClipboard)
+		v1auth.GET("/index", m.getIndex)
 		v1auth.POST("/clipboard", m.PutToUniversalClipboard)
 		v1auth.GET("/ws", m.Subscribe)
 		v1auth.PUT("/allocate", m.AllocateURL)

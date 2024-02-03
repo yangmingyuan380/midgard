@@ -31,5 +31,8 @@ See https://changkun.de/s/midgard for more details.
 		statusCmd,
 		code2imgCmd,
 	)
-	r.Execute()
+	err := r.Execute()
+	if err != nil {
+		log.Fatalln("cobra execute failed", err)
+	}
 }

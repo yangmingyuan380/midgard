@@ -30,16 +30,18 @@ type Midgard struct {
 
 	mu    sync.Mutex
 	users *list.List
+
+	historyMsg *list.List
 }
 
 // NewMidgard creates a new midgard server
 func NewMidgard() *Midgard {
-	return &Midgard{users: list.New()}
+	return &Midgard{users: list.New(), historyMsg: list.New()}
 }
 
 // Serve serves Midgard RESTful APIs.
 func (m *Midgard) Serve() {
-	ctx, cancel := context.WithCancel(context.Background())
+	_, cancel := context.WithCancel(context.Background())
 
 	wg := sync.WaitGroup{}
 	wg.Add(1)
@@ -63,11 +65,11 @@ func (m *Midgard) Serve() {
 		defer wg.Done()
 		m.serveHTTP()
 	}()
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		backup(ctx)
-	}()
+	//wg.Add(1)
+	//go func() {
+	//	defer wg.Done()
+	//	backup(ctx)
+	//}()
 	wg.Wait()
 
 	log.Printf("api server is down, good bye!")
