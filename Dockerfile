@@ -7,7 +7,7 @@ WORKDIR /app
 COPY . .
 RUN apt update && apt install -y wget gcc
 RUN mkdir -p /root/goes
-ARG GOVERSION
+ARG GOVERSION=go1.21.5
 RUN cd /root/goes && wget https://dl.google.com/go/$GOVERSION.linux-amd64.tar.gz
 RUN cd /root/goes && tar xvf $GOVERSION.linux-amd64.tar.gz && rm $GOVERSION.linux-amd64.tar.gz
 RUN cd /root/goes && mv /root/goes/go /root/goes/$GOVERSION
@@ -22,12 +22,5 @@ ENTRYPOINT ["dumb-init", "--"]
 WORKDIR /app
 COPY . .
 COPY --from=builder-env /app/midgard /app/mg
-RUN mkdir -p /root/.ssh && \
-  mv id_rsa /root/.ssh/id_rsa && \
-  chmod 400 /root/.ssh/id_rsa && \
-  echo "StrictHostKeyChecking no" > /root/.ssh/config && \
-  git config --global url."git@github.com:".insteadOf "https://github.com/" && \
-  git config --global user.name "Changkun Ou" && \
-  git config --global user.email "hi@changkun.de"
-EXPOSE 80
+EXPOSE 9880
 CMD ["/app/mg", "server"]

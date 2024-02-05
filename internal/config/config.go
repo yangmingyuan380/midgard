@@ -26,6 +26,7 @@ var RepoPath = "./data/repo"
 type Config struct {
 	Title  string  `yaml:"title"`
 	Domain string  `yaml:"domain"`
+	Proxy  bool    `yaml:"proxy"`
 	Server *Server `yaml:"server"`
 	Daemon *Daemon `yaml:"daemon"`
 }

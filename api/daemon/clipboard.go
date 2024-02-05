@@ -71,11 +71,6 @@ func (m *Daemon) watchLocalClipboard(ctx context.Context) {
 				return
 			}
 
-			// don't send an '\n' character
-			if utils.BytesToString(text) == "\n" {
-				continue
-			}
-
 			d := &types.PutToUniversalClipboardInput{}
 			d.Type = types.MIMEPlainText
 			d.Data = utils.BytesToString(text)

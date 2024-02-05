@@ -5,6 +5,7 @@
 package rest
 
 import (
+	"changkun.de/x/midgard/internal/config"
 	"container/list"
 	"encoding/base64"
 	"encoding/json"
@@ -285,7 +286,9 @@ func (m *Midgard) getAllDaemonClient(c *gin.Context) {
 }
 
 func (m *Midgard) getIndex(c *gin.Context) {
-	c.HTML(http.StatusOK, "index.html", gin.H{})
+	domain := config.Get().Domain
+	proxy := config.Get().Proxy
+	c.HTML(http.StatusOK, "index.html", gin.H{"domain": domain, "proxy": proxy})
 }
 
 func (m *Midgard) getHistory(c *gin.Context) {
@@ -297,5 +300,7 @@ func (m *Midgard) getHistory(c *gin.Context) {
 			history = append(history, msg)
 		}
 	}
+
+	log.Println(history)
 	c.JSON(http.StatusOK, history)
 }
